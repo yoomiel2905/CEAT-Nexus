@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>CEAT NEXUS — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dlsu-dark:  #0c2310;
+      --dlsu-mid:   #1a3d1a;
+      --dlsu-green: #3a8c3a;
+      --dlsu-light: #5cb85c;
+      --dlsu-pale:  #a8d8a8;
+      --card-bg:    rgba(12,35,12,0.88);
+      --card-border:rgba(255,255,255,0.10);
+      --muted:      rgba(255,255,255,0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: url('images/bg.png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dark green overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: linear-gradient(160deg, rgba(8,24,8,0.78) 0%, rgba(10,31,10,0.70) 50%, rgba(5,18,5,0.84) 100%);
+      z-index: 0; pointer-events: none;
+    }
+
+    /* Subtle grid texture */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(61,184,61,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(61,184,61,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0; pointer-events: none;
+    }
+
+    .wrapper {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card {
+      width: 720px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 22px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 40px 36px 36px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(92,184,92,0.08);
+      text-align: center;
+    }
+
+    /* Top accent line */
+    .login-card::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, var(--dlsu-light), #3db83d, transparent);
+      border-radius: 22px 22px 0 0;
+      margin: -40px -36px 36px;
+    }
+
+    .logo-wrap {
+      margin-bottom: 24px;
+    }
+
+    .logo-wrap img {
+      width: 640px;
+      height: auto;
+      filter: drop-shadow(0 4px 18px rgba(92,184,92,0.25));
+    }
+
+    /* Fallback if no logo */
+    .logo-fallback {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .logo-mark {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--dlsu-light), var(--dlsu-mid));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 18px rgba(92,184,92,0.4);
+    }
+
+    .logo-mark svg {
+      width: 22px; height: 22px;
+      fill: none; stroke: white;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem; font-weight: 800;
+      color: white; text-align: left; letter-spacing: -0.01em;
+    }
+
+    .logo-text small {
+      display: block;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.58rem; font-weight: 400;
+      color: var(--muted); letter-spacing: 0.12em;
+      text-transform: uppercase; margin-top: 2px;
+    }
+
+    .card-eyebrow {
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--dlsu-pale); margin-bottom: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+
+    .card-eyebrow::before,
+    .card-eyebrow::after {
+      content: '·'; color: var(--dlsu-light); font-size: 1.2em;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem; font-weight: 800;
+      color: white; letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-size: 0.78rem; color: var(--muted);
+      font-weight: 300; margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin-bottom: 24px;
+    }
+
+    .btn-primary-ceat {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--dlsu-light);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 700;
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(92,184,92,0.35);
+      transition: all 0.18s;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary-ceat:hover {
+      background: #6ecf6e;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(92,184,92,0.5);
+      color: white;
+    }
+
+    .btn-ghost-ceat {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%;
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.75);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.13); border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-ghost-ceat:hover {
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(92,184,92,0.35);
+      color: white;
+    }
+
+    .card-footer-note {
+      margin-top: 22px;
+      font-size: 0.65rem; color: rgba(255,255,255,0.22);
+      line-height: 1.5; letter-spacing: 0.02em;
+    }
+
+    .card-footer-note span { color: rgba(92,184,92,0.6); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="login-card">
+
+      <!-- LOGO -->
+      <div class="logo-wrap">
+        <img src="images/logo.png" alt="CEAT NEXUS Logo"
+             onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='inline-flex';">
+        <div class="logo-fallback" id="logo-fallback" style="display:none;">
+          <div class="logo-mark">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="logo-text">
+            CEAT NEXUS
+            <small>DLSU — Dasmariñas</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-eyebrow">Dashboard</div>
+      <div class="card-title">Welcome Back!</div>
+      <p class="card-sub">Access your CEAT student hub — forums, files, events, and more.</p>
+
+      <div class="divider"></div>
+
+      <a href="register.html" class="btn-primary-ceat">
+        ✦ &nbsp;Register
+      </a>
+      <a href="login.php" class="btn-ghost-ceat">
+        → &nbsp;Login
+      </a>
+
+      <div class="card-footer-note">
+        CEAT NEXUS &nbsp;·&nbsp; <span>De La Salle University — Dasmariñas</span><br>
+        College of Engineering, Architecture &amp; Technology
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
