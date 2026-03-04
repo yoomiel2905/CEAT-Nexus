@@ -1,6 +1,6 @@
 <?php
 // ── DB CONFIG (same as dashboard.php) ──────────────────────────────────────
-$serverName = "LAPTOP-3OO9AVHG\\SQLEXPRESS";
+$serverName = ".\SQLEXPRESS";
 $connectionOptions = [
     "Database" => "PortalDB",
     "Uid"      => "",
