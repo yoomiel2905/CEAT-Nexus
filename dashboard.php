@@ -1,4 +1,16 @@
 <?php
+// ── SESSION GUARD ─────────────────────────────────────────────────────────────
+session_start();
+if (!isset($_SESSION['student_id'])) { header("Location: login.php"); exit; }
+$studentFirstName = $_SESSION['first_name'];
+$studentLastName  = $_SESSION['last_name'];
+$studentProgram   = $_SESSION['program'];
+$studentNo        = $_SESSION['student_no'];
+$isAdmin          = $_SESSION['is_admin'] ?? false;
+$initials = strtoupper(substr($studentFirstName,0,1).substr($studentLastName,0,1));
+// ─────────────────────────────────────────────────────────────────────────────
+?>
+<?php
 $serverName=".\SQLEXPRESS";
 $connectionOptions=[
     "Database"=>"PortalDB",
@@ -233,20 +245,59 @@ $nextevent=$row_event['EVENT_DATE']->format('M j');
             border: 1.5px solid #0f2610;
         }
 
+
+        /* AVATAR DROPDOWN */
+        .avatar-wrap { position: relative; }
         .nav-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            width: 32px; height: 32px; border-radius: 50%;
             background: linear-gradient(135deg, var(--dlsu-light), var(--dlsu-mid));
             border: 2px solid rgba(92,184,92,0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 800;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 800; cursor: pointer;
             box-shadow: 0 0 10px rgba(92,184,92,0.25);
+            user-select: none; transition: box-shadow 0.18s;
         }
+        .nav-avatar:hover, .nav-avatar.open { box-shadow: 0 0 18px rgba(92,184,92,0.5); }
+
+        .avatar-dropdown {
+            display: none; position: absolute; top: calc(100% + 10px); right: 0;
+            width: 200px;
+            background: rgba(10,28,10,0.97);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            z-index: 500;
+            animation: dropIn 0.18s ease;
+        }
+        .avatar-dropdown.open { display: block; }
+        @keyframes dropIn {
+            from { opacity:0; transform: translateY(-6px) scale(0.97); }
+            to   { opacity:1; transform: none; }
+        }
+        .dd-header {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .dd-name { font-size: 0.82rem; font-weight: 700; color: white; }
+        .dd-role { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+        .dd-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 16px; font-size: 0.8rem; font-weight: 600;
+            color: rgba(255,255,255,0.65); text-decoration: none;
+            transition: background 0.14s, color 0.14s; cursor: pointer;
+        }
+        .dd-item:hover { background: rgba(255,255,255,0.07); color: white; }
+        .dd-item.danger { color: rgba(231,76,60,0.8); }
+        .dd-item.danger:hover { background: rgba(231,76,60,0.1); color: #ff8a80; }
+        .dd-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 2px 0; }
+        /* arrow pointer */
+        .avatar-dropdown::before {
+            content: ''; position: absolute; top: -6px; right: 10px;
+            width: 12px; height: 6px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            background: rgba(255,255,255,0.12);
+        }
+
 
         /* BODY LAYOUT */
         .body-wrap {
@@ -815,10 +866,28 @@ $nextevent=$row_event['EVENT_DATE']->format('M j');
         </div>
 
         <div class="nav-right">
+            <?php if($isAdmin): ?>
+            <a href="admin.php" style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;background:rgba(231,76,60,0.18);border:1px solid rgba(231,76,60,0.4);font-size:0.62rem;font-weight:800;color:#ff8a80;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;">⚙ Admin</a>
+            <?php endif; ?>
             <div class="nav-chip"><div class="chip-dot"></div>AY 2025–2026</div>
             <div class="nav-btn">🔍</div>
             <div class="nav-btn">🔔<div class="nav-notif"></div></div>
-            <div class="nav-avatar">JS</div>
+            <div class="avatar-wrap">
+                <div class="nav-avatar" id="avatarBtn" onclick="toggleDropdown()"><?php echo htmlspecialchars($initials); ?></div>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div class="dd-header">
+                        <div class="dd-name"><?php echo htmlspecialchars($studentFirstName.' '.$studentLastName); ?></div>
+                        <div class="dd-role"><?php echo htmlspecialchars($studentProgram); ?> &nbsp;·&nbsp; <?php echo htmlspecialchars($studentNo); ?></div>
+                    </div>
+                    <?php if($isAdmin): ?>
+                    <a href="admin.php" class="dd-item">⚙&nbsp; Admin Panel</a>
+                    <div class="dd-divider"></div>
+                    <?php endif; ?>
+                    <a href="settings.php" class="dd-item">⚙&nbsp; Settings</a>
+                    <div class="dd-divider"></div>
+                    <a href="logout.php" class="dd-item danger">↩&nbsp; Log Out</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -831,7 +900,7 @@ $nextevent=$row_event['EVENT_DATE']->format('M j');
 
             <div class="nav-section">Main</div>
             <div class="side-item active"><span class="side-icon">🏠</span>Dashboard</div>
-            <div class="side-item"><span class="side-icon">💬</span>Forums<span class="side-badge">12</span></div>
+            <a href="forum.php" class="side-item" style="text-decoration:none;color:inherit;"><span class="side-icon">💬</span>Forums</a>
             <div class="side-item"><span class="side-icon">📂</span>File Locator</div>
             <div class="side-item"><span class="side-icon">📅</span>Calendar</div>
 
@@ -844,10 +913,10 @@ $nextevent=$row_event['EVENT_DATE']->format('M j');
             <div class="side-item"><span class="side-icon">🤝</span>Organizations<span class="side-soon">Soon</span></div>
 
             <div class="sidebar-footer">
-                <div class="sf-avatar">JS</div>
+                <div class="sf-avatar"><?php echo htmlspecialchars($initials); ?></div>
                 <div>
-                    <div class="sf-name">Juan Santos</div>
-                    <div class="sf-role">BSCE · 3rd Year</div>
+                    <div class="sf-name"><?php echo htmlspecialchars($studentFirstName.' '.$studentLastName); ?></div>
+                    <div class="sf-role"><?php echo htmlspecialchars($studentProgram); ?><?php if($isAdmin): ?> &nbsp;·&nbsp; <span style="color:#ff8a80;font-size:0.58rem">ADMIN</span><?php endif; ?></div>
                 </div>
             </div>
         </aside>
@@ -995,6 +1064,23 @@ $nextevent=$row_event['EVENT_DATE']->format('M j');
             this.classList.add('active');
         });
     }
+
+    // Avatar dropdown toggle
+    function toggleDropdown() {
+        var btn = document.getElementById('avatarBtn');
+        var dd  = document.getElementById('avatarDropdown');
+        btn.classList.toggle('open');
+        dd.classList.toggle('open');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        var wrap = document.querySelector('.avatar-wrap');
+        if (wrap && !wrap.contains(e.target)) {
+            document.getElementById('avatarBtn').classList.remove('open');
+            document.getElementById('avatarDropdown').classList.remove('open');
+        }
+    });
 </script>
 </body>
 </html>

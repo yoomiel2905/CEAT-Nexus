@@ -1,6 +1,6 @@
 <?php
 // ── DB CONFIG (same as dashboard.php) ──────────────────────────────────────
-$serverName = ".\SQLEXPRESS";
+$serverName = "LAPTOP-3OO9AVHG\\SQLEXPRESS";
 $connectionOptions = [
     "Database" => "PortalDB",
     "Uid"      => "",
@@ -38,8 +38,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (empty($id_number)) {
         $errors[] = "Student ID number is required.";
-    } elseif (!preg_match('/^\d{7}$/', $id_number)) {
-        $errors[] = "Student ID must be exactly 7 digits (e.g. 2412345).";
+    } elseif (!preg_match('/^\d{9}$/', $id_number)) {
+        $errors[] = "Student ID must be exactly 9 digits (e.g. 241234567).";
     }
 
     if (empty($program)) $errors[] = "Please select your program.";
@@ -59,13 +59,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($conn === false) {
             $errors[] = "Database connection failed. Please try again later.";
         } else {
-            // Check for duplicate email or ID
-            $checkSql    = "SELECT COUNT(*) AS CNT FROM STUDENTS WHERE EMAIL = ? OR ID_NUMBER = ?";
+            // Check for duplicate email or student number
+            $checkSql    = "SELECT COUNT(*) AS CNT FROM STUDENTS WHERE EMAIL = ? OR STUDENT_NO = ?";
             $checkParams = [$email, $id_number];
             $checkResult = sqlsrv_query($conn, $checkSql, $checkParams);
 
             if ($checkResult === false) {
-                $errors[] = "Database error during duplicate check.";
+                $sqlErr = sqlsrv_errors();
+                $errors[] = "DB error: " . (isset($sqlErr[0]) ? $sqlErr[0]["message"] : "unknown");
             } else {
                 $checkRow = sqlsrv_fetch_array($checkResult, SQLSRV_FETCH_ASSOC);
                 if ($checkRow["CNT"] > 0) {
@@ -74,15 +75,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     // Hash password and insert
                     $hashedPw = password_hash($password, PASSWORD_BCRYPT);
 
-                    $insertSql = "INSERT INTO STUDENTS (FIRST_NAME, LAST_NAME, EMAIL, ID_NUMBER, PROGRAM, PASSWORD_HASH, CREATED_AT)
-                                  VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
-                    $insertParams = [$firstname, $lastname, $email, $id_number, $program, $hashedPw];
+                    $insertSql = "INSERT INTO STUDENTS (STUDENT_NO, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD, PROGRAM, YEAR_LEVEL, STATUS, DATE_CREATED) VALUES (?, ?, ?, ?, ?, ?, 1, 'active', GETDATE())";
+                    $insertParams = [$id_number, $firstname, $lastname, $email, $hashedPw, $program];
                     $insertResult = sqlsrv_query($conn, $insertSql, $insertParams);
 
                     if ($insertResult === false) {
-                        $errors[] = "Registration failed: " . print_r(sqlsrv_errors(), true);
+                        $sqlErr = sqlsrv_errors();
+                        $errors[] = "Registration failed: " . (isset($sqlErr[0]) ? $sqlErr[0]["message"] : "unknown");
                     } else {
-                        $success = true;
+                        sqlsrv_close($conn);
+                        header("Location: login.php?registered=1");
+                        exit;
                     }
                 }
             }
@@ -426,8 +429,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <label for="id_number">Student ID Number</label>
             <div class="input-wrap">
               <span class="input-icon">🪪</span>
-              <input type="text" id="id_number" name="id_number" placeholder="7-digit ID e.g. 2412345"
-                     maxlength="7" pattern="\d{7}"
+              <input type="text" id="id_number" name="id_number" placeholder="9-digit ID e.g. 241234567"
+                     maxlength="9" pattern="\d{9}"
                      value="<?= htmlspecialchars($formData['id_number']) ?>" required>
             </div>
           </div>
@@ -438,21 +441,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               <span class="input-icon">🎓</span>
               <select id="program" name="program" required>
                 <option value="" disabled <?= empty($formData['program']) ? 'selected' : '' ?>>Select your program</option>
-                <optgroup label="Engineering">
-                  <option value="BSCE"   <?= $formData['program']==='BSCE'   ? 'selected':'' ?>>BS Civil Engineering</option>
-                  <option value="BSEE"   <?= $formData['program']==='BSEE'   ? 'selected':'' ?>>BS Electrical Engineering</option>
-                  <option value="BSME"   <?= $formData['program']==='BSME'   ? 'selected':'' ?>>BS Mechanical Engineering</option>
-                  <option value="BSECE"  <?= $formData['program']==='BSECE'  ? 'selected':'' ?>>BS Electronics Engineering</option>
-                  <option value="BSIE"   <?= $formData['program']==='BSIE'   ? 'selected':'' ?>>BS Industrial Engineering</option>
-                  <option value="BSCHE"  <?= $formData['program']==='BSCHE'  ? 'selected':'' ?>>BS Chemical Engineering</option>
-                </optgroup>
-                <optgroup label="Architecture">
-                  <option value="BSArch" <?= $formData['program']==='BSArch' ? 'selected':'' ?>>BS Architecture</option>
-                </optgroup>
-                <optgroup label="Technology">
-                  <option value="BSIT"   <?= $formData['program']==='BSIT'   ? 'selected':'' ?>>BS Information Technology</option>
-                  <option value="BSCpE"  <?= $formData['program']==='BSCpE'  ? 'selected':'' ?>>BS Computer Engineering</option>
-                </optgroup>
+                <option value="BSCpE"  <?= $formData['program']==='BSCpE'  ? 'selected':'' ?>>Computer Engineering</option>
+                <option value="BSCE"   <?= $formData['program']==='BSCE'   ? 'selected':'' ?>>Civil Engineering</option>
+                <option value="BSArch" <?= $formData['program']==='BSArch' ? 'selected':'' ?>>Architecture</option>
+                <option value="BSME"   <?= $formData['program']==='BSME'   ? 'selected':'' ?>>Mechanical Engineering</option>
+                <option value="BSECE"  <?= $formData['program']==='BSECE'  ? 'selected':'' ?>>Electronics Engineering</option>
+                <option value="BSIE"   <?= $formData['program']==='BSIE'   ? 'selected':'' ?>>Industrial Engineering</option>
+                <option value="BSEE"   <?= $formData['program']==='BSEE'   ? 'selected':'' ?>>Electrical Engineering</option>
+                <option value="BSMA"   <?= $formData['program']==='BSMA'   ? 'selected':'' ?>>Multimedia Arts</option>
               </select>
             </div>
           </div>
@@ -533,7 +529,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   });
 
   document.getElementById('id_number').addEventListener('input', function () {
-    this.value = this.value.replace(/\D/g,'').slice(0,7);
+    this.value = this.value.replace(/\D/g,'').slice(0,9);
   });
 </script>
 </body>
