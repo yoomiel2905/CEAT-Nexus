@@ -8,7 +8,7 @@ if (isset($_SESSION['student_id'])) {
 }
 
 // ── DB CONFIG ───────────────────────────────────────────────────────────────
-$serverName = "LAPTOP-3OO9AVHG\\SQLEXPRESS";
+$serverName = ".\SQLEXPRESS";
 $connectionOptions = [
     "Database" => "PortalDB",
     "Uid"      => "",
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "Database connection failed. Please try again later.";
         } else {
             $sql    = "SELECT STUDENT_ID, STUDENT_NO, FIRST_NAME, LAST_NAME, PROGRAM, PASSWORD, IS_ADMIN
-                       FROM STUDENTS WHERE EMAIL = ?";
+                      FROM STUDENTS WHERE EMAIL = ?";
             $params = [$email];
             $result = sqlsrv_query($conn, $sql, $params);
 
@@ -275,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <!-- LOGO -->
       <div class="logo-wrap">
         <img src="images/logo.png" alt="CEAT NEXUS"
-             onerror="this.style.display='none'; document.getElementById('logo-fb').style.display='flex';">
+            onerror="this.style.display='none'; document.getElementById('logo-fb').style.display='flex';">
         <div class="logo-fallback" id="logo-fb">
           <div class="logo-mark">
             <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -307,9 +307,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           <div class="input-wrap">
             <span class="input-icon">✉️</span>
             <input type="email" id="email" name="email"
-                   placeholder="yourid@dlsud.edu.ph"
-                   value="<?= htmlspecialchars($formEmail) ?>"
-                   autocomplete="email" required>
+                  placeholder="yourid@dlsud.edu.ph"
+                  value="<?= htmlspecialchars($formEmail) ?>"
+                  autocomplete="email" required>
           </div>
         </div>
 
@@ -318,8 +318,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           <div class="input-wrap">
             <span class="input-icon">🔒</span>
             <input type="password" id="password" name="password"
-                   placeholder="Your password"
-                   autocomplete="current-password" required>
+                  placeholder="Your password"
+                  autocomplete="current-password" required>
             <span class="pw-toggle" id="pwToggle" title="Show/hide password">👁</span>
           </div>
         </div>

@@ -11,7 +11,7 @@ $isAdmin          = $_SESSION['is_admin'] ?? false;
 $initials = strtoupper(substr($studentFirstName,0,1).substr($studentLastName,0,1));
 
 // ── DB ────────────────────────────────────────────────────────────────────────
-$serverName = ".\\SQLEXPRESS";
+$serverName = ".\SQLEXPRESS";
 $connectionOptions = ["Database" => "PortalDB", "Uid" => "", "PWD" => ""];
 $conn = sqlsrv_connect($serverName, $connectionOptions);
 if ($conn === false) die(print_r(sqlsrv_errors(), true));
