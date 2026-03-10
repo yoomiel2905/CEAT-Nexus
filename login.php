@@ -8,7 +8,7 @@ if (isset($_SESSION['student_id'])) {
 }
 
 // ── DB CONFIG ───────────────────────────────────────────────────────────────
-$serverName = ".\SQLEXPRESS";
+$serverName = ".\\SQLEXPRESS";
 $connectionOptions = [
     "Database" => "PortalDB",
     "Uid"      => "",
@@ -17,9 +17,32 @@ $connectionOptions = [
 
 $error     = "";
 $formEmail = "";
+$lockedOut = false;
+$cooldownRemaining = 0;
+
+// ── LOCKOUT LOGIC ────────────────────────────────────────────────────────────
+// Track failed attempts per session
+if (!isset($_SESSION['login_attempts']))  $_SESSION['login_attempts'] = 0;
+if (!isset($_SESSION['lockout_time']))    $_SESSION['lockout_time']   = null;
+
+$maxAttempts    = 3;
+$cooldownSecs   = 60; // 1 minute
+
+// Check if currently locked out
+if ($_SESSION['lockout_time'] !== null) {
+    $elapsed = time() - $_SESSION['lockout_time'];
+    if ($elapsed < $cooldownSecs) {
+        $lockedOut         = true;
+        $cooldownRemaining = $cooldownSecs - $elapsed;
+    } else {
+        // Cooldown expired — reset
+        $_SESSION['login_attempts'] = 0;
+        $_SESSION['lockout_time']   = null;
+    }
+}
 
 // ── HANDLE FORM SUBMISSION ──────────────────────────────────────────────────
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !$lockedOut) {
 
     $email    = trim($_POST["email"]    ?? "");
     $password = $_POST["password"] ?? "";
@@ -44,9 +67,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC);
 
                 if (!$row || !password_verify($password, $row["PASSWORD"])) {
-                    $error = "Invalid email or password. Please try again.";
+                    $_SESSION['login_attempts']++;
+                    $remaining = $maxAttempts - $_SESSION['login_attempts'];
+
+                    if ($_SESSION['login_attempts'] >= $maxAttempts) {
+                        $_SESSION['lockout_time'] = time();
+                        $lockedOut         = true;
+                        $cooldownRemaining = $cooldownSecs;
+                        $error = ""; // Lockout message shown separately
+                    } else {
+                        $error = "Invalid email or password. &nbsp;·&nbsp; "
+                               . $remaining . " attempt" . ($remaining !== 1 ? "s" : "") . " remaining.";
+                    }
                 } else {
-                    // ── Set session ─────────────────────────────────────────
+                    // ── Success: reset counters & set session ────────────────
+                    $_SESSION['login_attempts'] = 0;
+                    $_SESSION['lockout_time']   = null;
+
                     session_regenerate_id(true);
                     $_SESSION['student_id'] = $row['STUDENT_ID'];
                     $_SESSION['student_no'] = $row['STUDENT_NO'];
@@ -171,13 +208,34 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       background: rgba(220,53,69,0.14); border: 1px solid rgba(220,53,69,0.35);
       color: #ff8a95; border-radius: 10px; padding: 11px 14px;
       font-size: 0.8rem; margin-bottom: 18px;
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .alert-lockout {
+      background: rgba(220,100,0,0.16); border: 1px solid rgba(255,140,0,0.4);
+      color: #ffb347; border-radius: 10px; padding: 14px 16px;
+      font-size: 0.82rem; margin-bottom: 18px; text-align: center;
+      line-height: 1.6;
+    }
+    .alert-lockout .lockout-timer {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: #ffcc66; display: block; margin: 6px 0 2px;
+      letter-spacing: 0.04em;
     }
     .alert-info {
       background: rgba(92,184,92,0.12); border: 1px solid rgba(92,184,92,0.3);
       color: #8de88d; border-radius: 10px; padding: 10px 14px;
       font-size: 0.78rem; margin-bottom: 18px; text-align: center;
     }
+    .attempt-dots {
+      display: flex; justify-content: center; gap: 7px; margin-bottom: 18px;
+    }
+    .attempt-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      transition: background 0.2s;
+    }
+    .attempt-dot.used { background: rgba(220,53,69,0.7); border-color: rgba(220,53,69,0.5); }
     .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
     label {
       font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
@@ -207,6 +265,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     input:focus { border-color: rgba(92,184,92,0.55); background: rgba(92,184,92,0.06); }
     input::placeholder { color: rgba(255,255,255,0.22); }
+    input:disabled { opacity: 0.45; cursor: not-allowed; }
     .form-meta {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 22px;
@@ -234,9 +293,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       box-shadow: 0 4px 18px rgba(92,184,92,0.35);
       transition: all 0.18s; letter-spacing: 0.02em;
     }
-    .btn-submit:hover { background: #6ecf6e; transform: translateY(-2px); box-shadow: 0 8px 26px rgba(92,184,92,0.5); }
+    .btn-submit:hover:not(:disabled) { background: #6ecf6e; transform: translateY(-2px); box-shadow: 0 8px 26px rgba(92,184,92,0.5); }
     .btn-submit:active { transform: translateY(0); }
-    .btn-submit.loading { pointer-events: none; opacity: 0.75; }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
     .spinner {
       display: none; width: 14px; height: 14px;
       border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
@@ -294,10 +353,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <div class="alert-info">✅ &nbsp;Account created! You can now log in.</div>
       <?php elseif (isset($_GET['logout']) && $_GET['logout'] === '1'): ?>
       <div class="alert-info">👋 &nbsp;You've been signed out successfully.</div>
+      <?php elseif (isset($_GET['pwreset']) && $_GET['pwreset'] === '1'): ?>
+      <div class="alert-info">🔑 &nbsp;Password updated! You can now log in with your new password.</div>
       <?php endif; ?>
 
-      <?php if (!empty($error)): ?>
-      <div class="alert-error">⚠ &nbsp;<?= htmlspecialchars($error) ?></div>
+      <?php if ($lockedOut): ?>
+      <!-- LOCKOUT BANNER -->
+      <div class="alert-lockout">
+        🔒 &nbsp;<strong>Too many failed attempts.</strong><br>
+        Please wait before trying again.<br>
+        <span class="lockout-timer" id="lockoutTimer"><?= $cooldownRemaining ?>s</span>
+        <small>remaining</small>
+      </div>
+      <?php elseif (!empty($error)): ?>
+      <div class="alert-error">⚠ &nbsp;<span><?= $error ?></span></div>
+      <?php endif; ?>
+
+      <!-- Attempt indicator dots (show after first failure) -->
+      <?php if (!$lockedOut && $_SESSION['login_attempts'] > 0): ?>
+      <div class="attempt-dots">
+        <?php for ($i = 0; $i < $maxAttempts; $i++): ?>
+          <div class="attempt-dot <?= $i < $_SESSION['login_attempts'] ? 'used' : '' ?>"></div>
+        <?php endfor; ?>
+      </div>
       <?php endif; ?>
 
       <form method="POST" action="login.php" id="loginForm">
@@ -309,7 +387,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <input type="email" id="email" name="email"
                   placeholder="yourid@dlsud.edu.ph"
                   value="<?= htmlspecialchars($formEmail) ?>"
-                  autocomplete="email" required>
+                  autocomplete="email"
+                  <?= $lockedOut ? 'disabled' : '' ?> required>
           </div>
         </div>
 
@@ -319,20 +398,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <span class="input-icon">🔒</span>
             <input type="password" id="password" name="password"
                   placeholder="Your password"
-                  autocomplete="current-password" required>
+                  autocomplete="current-password"
+                  <?= $lockedOut ? 'disabled' : '' ?> required>
             <span class="pw-toggle" id="pwToggle" title="Show/hide password">👁</span>
           </div>
         </div>
 
         <div class="form-meta">
           <label class="remember-label">
-            <input type="checkbox" name="remember" id="remember">
+            <input type="checkbox" name="remember" id="remember" <?= $lockedOut ? 'disabled' : '' ?>>
             Remember me
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="forgot_password.php" class="forgot-link" target="_blank">Forgot password?</a>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn">
+        <button type="submit" class="btn-submit" id="submitBtn" <?= $lockedOut ? 'disabled' : '' ?>>
           <div class="spinner" id="spinner"></div>
           <span id="btnText">→ &nbsp;Sign In</span>
         </button>
@@ -366,10 +446,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     const btn     = document.getElementById('submitBtn');
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
-    btn.classList.add('loading');
+    btn.disabled = true;
     spinner.style.display = 'block';
     btnText.textContent   = 'Signing in…';
   });
+
+  // Lockout countdown timer
+  <?php if ($lockedOut && $cooldownRemaining > 0): ?>
+  (function () {
+    let secs = <?= $cooldownRemaining ?>;
+    const timerEl  = document.getElementById('lockoutTimer');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const tick = setInterval(function () {
+      secs--;
+      if (timerEl) timerEl.textContent = secs + 's';
+      if (secs <= 0) {
+        clearInterval(tick);
+        // Auto-reload so PHP resets the lockout state
+        window.location.reload();
+      }
+    }, 1000);
+  })();
+  <?php endif; ?>
 </script>
 </body>
 </html>

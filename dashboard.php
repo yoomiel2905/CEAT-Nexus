@@ -40,9 +40,12 @@ $totalfiles=$row_files['TOTAL'];
 $sql_event="SELECT TOP 1 EVENT_DATE FROM EVENTS ORDER BY EVENT_DATE ASC";
 $result_event=sqlsrv_query($conn,$sql_event);
 $row_event=sqlsrv_fetch_array($result_event);
-// sqlsrv returns DATETIME columns as PHP DateTime objects, not strings
-// So we use ->format() directly instead of date()/strtotime()
-$nextevent=$row_event['EVENT_DATE']->format('M j');
+// Guard against no events existing yet
+if ($row_event && $row_event['EVENT_DATE'] !== null) {
+    $nextevent = $row_event['EVENT_DATE']->format('M j');
+} else {
+    $nextevent = 'No events yet';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
