@@ -905,7 +905,7 @@ if ($row_event && $row_event['EVENT_DATE'] !== null) {
             <div class="side-item active"><span class="side-icon">🏠</span>Dashboard</div>
             <a href="forum.php" class="side-item" style="text-decoration:none;color:inherit;"><span class="side-icon">💬</span>Forums</a>
             <div class="side-item"><span class="side-icon">📂</span>File Locator</div>
-            <div class="side-item"><span class="side-icon">📅</span>Calendar</div>
+            <a href="calendar.php" class="side-item" style="text-decoration:none;color:inherit;"><span class="side-icon">📅</span>Calendar</a>
 
             <div class="nav-section">Campus</div>
             <div class="side-item"><span class="side-icon">🗺️</span>CEAT Map<span class="side-soon">Soon</span></div>

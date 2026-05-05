@@ -531,7 +531,7 @@ function timeAgo($dateStr) {
       <a href="dashboard.php" class="side-item" style="color:inherit;"><span class="side-icon">🏠</span>Dashboard</a>
       <a href="forum.php"     class="side-item active"><span class="side-icon">💬</span>Forums</a>
       <a href="#"             class="side-item"><span class="side-icon">📂</span>File Locator</a>
-      <a href="#"             class="side-item"><span class="side-icon">📅</span>Calendar</a>
+      <a href="calendar.php"             class="side-item"><span class="side-icon">📅</span>Calendar</a>
       <div class="nav-section">Campus</div>
       <div class="side-item"><span class="side-icon">🗺️</span>CEAT Map<span class="side-soon">Soon</span></div>
       <div class="side-item"><span class="side-icon">🏛️</span>Room Gallery</div>

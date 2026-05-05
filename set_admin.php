@@ -25,7 +25,7 @@ if ($row['C'] == 0) {
 
 // Step 2: Grant admin to the student with this email
 // ─── CHANGE THIS EMAIL to your own account ───────────────────────────────────
-$adminEmail = "haa0803@dlsud.edu.ph";
+$adminEmail = "aikinejaynhaloot@gmail.com";
 // ─────────────────────────────────────────────────────────────────────────────
 
 $r = sqlsrv_query($conn, "UPDATE STUDENTS SET IS_ADMIN = 1 WHERE EMAIL = ?", [$adminEmail]);
