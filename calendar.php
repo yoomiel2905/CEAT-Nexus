@@ -571,7 +571,7 @@ function typeColor($type, $key) {
             <div class="nav-section">Main</div>
             <a href="dashboard.php" class="side-item" style="color:inherit;"><span class="side-icon">🏠</span>Dashboard</a>
             <a href="forum.php" class="side-item" style="color:inherit;"><span class="side-icon">💬</span>Forums</a>
-            <div class="side-item"><span class="side-icon">📂</span>File Locator</div>
+            <a href="file_locator.php" class="side-item" style="text-decoration:none;color:inherit;"><span class="side-icon">📂</span>File Locator</a>
             <div class="side-item active"><span class="side-icon">📅</span>Calendar</div>
 
             <div class="nav-section">Campus</div>

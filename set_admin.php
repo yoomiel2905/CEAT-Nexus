@@ -3,7 +3,7 @@
 // ONE-TIME SETUP SCRIPT — Run this ONCE in your browser, then DELETE it.
 // It adds an IS_ADMIN column to STUDENTS and marks a specific student as admin.
 // ─────────────────────────────────────────────────────────────────────────────
-/* USE THIS ONLY IF SETTING ADMIN, REMOVE /* AND THIS MESSAGE.
+//USE THIS ONLY IF SETTING ADMIN, REMOVE  AND THIS MESSAGE.
 
 $serverName = ".\\SQLEXPRESS";
 $connectionOptions = ["Database" => "PortalDB", "Uid" => "", "PWD" => ""];
@@ -25,7 +25,7 @@ if ($row['C'] == 0) {
 
 // Step 2: Grant admin to the student with this email
 // ─── CHANGE THIS EMAIL to your own account ───────────────────────────────────
-$adminEmail = "aikinejaynhaloot@gmail.com";
+$adminEmail = "psr0199@dlsud.edu.ph";
 // ─────────────────────────────────────────────────────────────────────────────
 
 $r = sqlsrv_query($conn, "UPDATE STUDENTS SET IS_ADMIN = 1 WHERE EMAIL = ?", [$adminEmail]);
